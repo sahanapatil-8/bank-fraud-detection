@@ -8,8 +8,7 @@ st.title("AI-Powered Fraud Detection System")
 st.markdown("### Enter Transaction Details")
 
 # Read API URL from env var, fall back to localhost for local dev
-API_URL = os.getenv("FRAUD_API_URL", "http://127.0.0.1:8001")
-
+API_URL = os.getenv("FRAUD_API_URL", "https://bank-fraud-detection.onrender.com")
 EXPECTED_FEATURES = 30  # time(1) + V1-V28(28) + amount(1)
 
 # -------------------------
@@ -74,8 +73,11 @@ if st.button("Analyze Transaction"):
         st.error("Request timed out. The API took too long to respond.")
         st.stop()
     except requests.exceptions.HTTPError as e:
-        # Surface the detail message returned by FastAPI
-        detail = response.json().get("detail", str(e))
+        try:
+            detail = response.json().get("detail", str(e))
+        except:
+            detail = response.text  # fallback if not JSON
+
         st.error(f"API error {response.status_code}: {detail}")
         st.stop()
 
