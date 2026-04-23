@@ -6,7 +6,7 @@ import os
 
 app = FastAPI()
 
-model_path = os.path.join(os.path.dirname(__file__), "..", "models", "fraud_model.pkl")
+model_path = os.path.join(os.path.dirname(__file__), "models", "fraud_model.pkl")
 model = joblib.load(model_path)
 
 class InputData(BaseModel):
@@ -16,14 +16,12 @@ class InputData(BaseModel):
 def home():
     return {"message": "Fraud Detection API is running"}
 
+@app.get("/test")
+def test():
+    return {"status": "ok"}
+
 @app.post("/predict")
 def predict(data: InputData):
-    input_data = np.array(data.features).reshape(1, -1)
-
-    prob = model.predict_proba(input_data)[0][1]
-    prediction = 1 if prob > 0.5 else 0
-
-    return {
-        "fraud": int(prediction),
-        "probability": float(prob)
-    }
+    x = np.array(data.features).reshape(1, -1)
+    prob = model.predict_proba(x)[0][1]
+    return {"fraud": int(prob > 0.5), "probability": float(prob)}
