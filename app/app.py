@@ -8,7 +8,7 @@ st.title("AI-Powered Fraud Detection System")
 st.markdown("### Enter Transaction Details")
 
 # Read API URL from env var, fall back to localhost for local dev
-API_URL = os.getenv("FRAUD_API_URL", "https://bank-fraud-detection.onrender.com")
+API_URL = os.getenv("FRAUD_API_URL", "https://bank-fraud-detection-ahe1.onrender.com")
 EXPECTED_FEATURES = 30  # time(1) + V1-V28(28) + amount(1)
 
 # -------------------------
