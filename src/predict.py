@@ -1,47 +1,34 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, field_validator
+from fastapi import FastAPI
+from pydantic import BaseModel
 import numpy as np
 import joblib
 import os
 
 app = FastAPI()
 
-@app.get("/")
-def root():
-    return {"status": "predict.py is loaded"}
-
+# Load model
 model_path = os.path.join(os.path.dirname(__file__), "..", "models", "fraud_model.pkl")
-
-try:
-    model = joblib.load(model_path)
-except FileNotFoundError:
-    raise RuntimeError(f"Model not found at: {model_path}")
-
-EXPECTED_FEATURES = 30  # time(1) + V1-V28(28) + amount(1)
-
+model = joblib.load(model_path)
 
 class InputData(BaseModel):
-    features: list[float]
+    features: list
 
-    @field_validator("features")
-    @classmethod
-    def check_length(cls, v):
-        if len(v) != EXPECTED_FEATURES:
-            raise ValueError(
-                f"Expected {EXPECTED_FEATURES} features, got {len(v)}"
-            )
-        return v
-
+@app.get("/")
+def home():
+    return {"message": "Fraud Detection API is running"}
 
 @app.post("/predict")
 def predict(data: InputData):
     try:
-        input_array = np.array(data.features).reshape(1, -1)
-        prob = model.predict_proba(input_array)[0][1]
-        prediction = int(prob > 0.5)
-        return {"fraud": prediction, "probability": float(prob)}
+        input_data = np.array(data.features).reshape(1, -1)
 
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        prob = model.predict_proba(input_data)[0][1]
+        prediction = 1 if prob > 0.5 else 0
+
+        return {
+            "fraud": int(prediction),
+            "probability": float(prob)
+        }
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        return {"error": str(e)}
