@@ -16,10 +16,6 @@ class InputData(BaseModel):
 def home():
     return {"message": "Fraud Detection API is running"}
 
-@app.get("/test")
-def test():
-    return {"status": "working"}
-
 @app.post("/predict")
 def predict(data: InputData):
     input_data = np.array(data.features).reshape(1, -1)
